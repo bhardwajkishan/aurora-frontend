@@ -46,7 +46,7 @@ export default function PESUButton({ onClick }: Props) {
       </svg>
 
       <span className="text-sm font-medium text-gray-800">
-        Sign in with pesuacademy.com
+        Sign in with pesu
       </span>
     </motion.button>
   );

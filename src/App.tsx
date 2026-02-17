@@ -1,84 +1,104 @@
 import { useState } from "react";
-import PESUButton from "./components/PESUButton";
-import GoogleButton from "./components/GoogleButton";
-import RememberMe from "./components/RememberMe";
+import { motion, AnimatePresence } from "framer-motion";
+
 import BackgroundVideo from "./components/BackgroundVideo";
 import HoverBlur from "./components/HoverBlur";
 import GlassCard from "./components/GlassCard";
-import PasswordInput from "./components/PasswordInput";
-import LoadingButton from "./components/LoadingButton";
+
+import WelcomeStep from "./components/StepContainer/WelcomeStep";
+import PermissionStep from "./components/StepContainer/PermissionStep";
+import LoginStep from "./components/StepContainer/LoginStep";
+import ReadyStep from "./components/StepContainer/ReadyStep";
 
 export default function App() {
   const [hovered, setHovered] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(0);
 
-  const handleLogin = () => {
-    setLoading(true);
+  // ✅ NEW MANUAL PROGRESS STATE
+  const [progress, setProgress] = useState(0);
 
-    setTimeout(() => {
-      setLoading(false);
-      alert("Login API will be connected later");
-    }, 2000);
+  const totalSteps = 4;
+
+  const goNext = () => {
+    if (step < totalSteps - 1) {
+      const nextStep = step + 1;
+      setStep(nextStep);
+
+      // ✅ MANUAL CONTROL (you decide values)
+      if (nextStep === 1) setProgress(33);
+      if (nextStep === 2) setProgress(66);
+      if (nextStep === 3) setProgress(100);
+    }
+  };
+
+  const goBack = () => {
+    if (step > 0) {
+      const prevStep = step - 1;
+      setStep(prevStep);
+
+      // ✅ MANUAL CONTROL BACKWARDS
+      if (prevStep === 0) setProgress(0);
+      if (prevStep === 1) setProgress(33);
+      if (prevStep === 2) setProgress(66);
+    }
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
 
-      {/* 🎥 Background Video */}
+      {/* Background */}
       <BackgroundVideo />
-
-      {/* 🌫 Hover Blur Layer */}
       <HoverBlur active={hovered} />
 
-      {/* 💎 Glass Card */}
       <GlassCard
         onHoverStart={() => setHovered(true)}
         onHoverEnd={() => setHovered(false)}
       >
-        <h1 className="text-3xl font-semibold text-center mb-10 text-gray-800">
-          Aurora
-        </h1>
+        <div className="relative w-[420px] overflow-hidden">
 
-        <div className="space-y-6">
+          {/* 🔥 Progress Bar */}
+          {step > 0 && (
+            <div className="absolute top-0 left-0 w-full h-[3px] bg-white/20 rounded-full overflow-hidden">
+              <motion.div
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.5 }}
+                className="h-full bg-white/60"
+              />
+            </div>
+          )}
 
-          {/* Email Input */}
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full px-5 py-3 rounded-xl bg-white/40 backdrop-blur-md border border-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
-          />
+          {/* 🔙 Back Button */}
+          {step > 0 && (
+            <button
+              onClick={goBack}
+              className="absolute left-4 top-6 text-white/70 hover:text-white transition z-20"
+            >
+              ←
+            </button>
+          )}
 
-          {/* Password Input with Toggle */}
-          <PasswordInput />
+          {/* 🚀 Slide Container */}
+          <div className="relative h-[420px] flex items-center justify-center">
 
-          {/* Remember Me + Forgot Password */}
-          <div className="flex justify-between items-center">
-            <RememberMe />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ x: 100, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -100, opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute w-full"
+              >
+                {step === 0 && <WelcomeStep onNext={goNext} />}
+                {step === 1 && <PermissionStep onNext={goNext} />}
+                {step === 2 && (
+                  <LoginStep onNext={goNext} onBack={goBack} />
+                )}
+                {step === 3 && <ReadyStep />}
+              </motion.div>
+            </AnimatePresence>
 
-            <span className="text-sm text-purple-600 hover:underline cursor-pointer">
-              Forgot Password?
-            </span>
           </div>
-
-          {/* Loading Button */}
-          <LoadingButton
-            loading={loading}
-            onClick={handleLogin}
-          />
-
-          <div className="flex items-center gap-4">
-            <div className="flex-1 h-px bg-white/40" />
-            <span className="text-xs text-gray-600">OR</span>
-            <div className="flex-1 h-px bg-white/40" />
-          </div>
-
-          <GoogleButton onClick={() => alert("Google OAuth will connect later")} />
-
-          <PESUButton onClick={() => alert("PESU SSO will connect later")} />
-            
-
-
-
 
         </div>
       </GlassCard>
